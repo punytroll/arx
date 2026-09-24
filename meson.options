@@ -1,0 +1,2 @@
+option('zlib', type: 'feature', value: 'auto')
+option('bzip2', type: 'feature', value: 'auto')
