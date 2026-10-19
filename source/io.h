@@ -85,13 +85,13 @@ namespace ARX
     inline auto WriteUnsignedInteger8Bit(std::ostream & OStream, std::uint8_t Value) -> void
     {
         Value = ARX::ToNetworkByteOrder(Value);
-		OStream.write(reinterpret_cast<std::ostream::char_type *>(&Value), sizeof(Value));
+        OStream.write(reinterpret_cast<std::ostream::char_type *>(&Value), sizeof(Value));
     }
     
     inline auto WriteUnsignedInteger32Bit(std::ostream & OStream, std::uint32_t Value) -> void
     {
         Value = ARX::ToNetworkByteOrder(Value);
-		OStream.write(reinterpret_cast<std::ostream::char_type *>(&Value), sizeof(Value));
+        OStream.write(reinterpret_cast<std::ostream::char_type *>(&Value), sizeof(Value));
     }
 }
 

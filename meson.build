@@ -1,15 +1,15 @@
 project(
   'arx',
   'cpp',
-  version: '1.0.0',
+  version: '26.10.0',
   license: 'MIT',
   license_files: ['LICENSE'],
   meson_version: '>=1.11.0',
   default_options: {
     'cpp_std': 'c++23',
     'werror': true,
-    'warning_level': '3'
-  }
+    'warning_level': '3',
+  },
 )
 
 arx_library_cpp_args = []
@@ -40,7 +40,7 @@ arx_library_sources = files(
   'source/reference.cpp',
   'source/reference_core.cpp',
   'source/relation.cpp',
-  'source/structure.cpp'
+  'source/structure.cpp',
 )
 arx_library_include_directories = include_directories('include')
 
@@ -52,16 +52,29 @@ arx_library = library(
   include_directories: arx_library_include_directories,
   version: meson.project_version(),
   soversion: '1',
-  install: true
+  install: true,
 )
 
 arx_library_dependency = declare_dependency(
   include_directories: arx_library_include_directories,
   link_with: arx_library,
-  dependencies: arx_library_dependencies
+  dependencies: arx_library_dependencies,
 )
 
 meson.override_dependency(
   'arx',
-  arx_library_dependency
+  arx_library_dependency,
+)
+
+test(
+  'arx_test_suite',
+  executable(
+    'test_suite',
+    build_by_default: false,
+    dependencies: arx_library_dependency,
+    sources: 'testing/test_suite.cpp',
+    cpp_args: [
+      '-DTEST_DATA_DIRECTORY_PATH="@0@"'.format(meson.current_source_dir() / 'testing' / 'data'),
+    ],
+  )
 )

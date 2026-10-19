@@ -11,7 +11,7 @@
 // ARX::id_not_unique                                                                            //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ARX::id_not_unique::id_not_unique(std::string const & String) :
-	std::invalid_argument{String}
+    std::invalid_argument{String}
 {
 }
 
@@ -20,7 +20,7 @@ ARX::id_not_unique::id_not_unique(std::string const & String) :
 // ARX::zlib_error                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ARX::zlib_error::zlib_error(std::string const & String) :
-	std::runtime_error{String}
+    std::runtime_error{String}
 {
 }
 
@@ -29,7 +29,7 @@ ARX::zlib_error::zlib_error(std::string const & String) :
 // ARX::bzlib_error                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ARX::bzlib_error::bzlib_error(std::string const & String) :
-	std::runtime_error{String}
+    std::runtime_error{String}
 {
 }
 
@@ -38,7 +38,7 @@ ARX::bzlib_error::bzlib_error(std::string const & String) :
 // ARX::bad_file_format                                                                          //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ARX::bad_file_format::bad_file_format(std::string const & String) :
-	std::logic_error{String}
+    std::logic_error{String}
 {
 }
 
@@ -47,6 +47,6 @@ ARX::bad_file_format::bad_file_format(std::string const & String) :
 // ARX::file_error                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ARX::file_error::file_error(std::string const & String) :
-	std::logic_error{String}
+    std::logic_error{String}
 {
 }
