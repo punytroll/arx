@@ -1,7 +1,7 @@
 project(
   'arx',
   'cpp',
-  version: '26.10.0',
+  version: '26.11.0',
   license: 'MIT',
   license_files: ['LICENSE'],
   meson_version: '>=1.11.0',

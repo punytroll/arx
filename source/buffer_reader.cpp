@@ -52,62 +52,10 @@ auto ARX::BufferReader::GetPosition() const -> ARX::Buffer::size_type
 
 auto ARX::BufferReader::SetPosition(ARX::Buffer::size_type Position) -> void
 {
-    return m_Marker.SetPosition(Position);
+    m_Marker.SetPosition(Position);
 }
 
-auto ARX::operator>>(ARX::BufferReader & BufferReader, std::string & String) -> ARX::BufferReader &
+auto ARX::BufferReader::Skip(ARX::Buffer::size_type Offset) -> void
 {
-    auto const & Buffer = BufferReader.GetBuffer();
-    auto Index = BufferReader.GetPosition();
-    auto Length = Buffer.GetLength();
-    
-    while(Length > Index)
-    {
-        if(auto Byte = Buffer[Index++]; Byte == std::byte{0})
-        {
-            break;
-        }
-        else
-        {
-            String += static_cast<std::string::value_type>(Byte);
-        }
-    }
-    BufferReader.SetPosition(Index);
-    
-    return BufferReader;
-}
-
-auto ARX::operator>>(ARX::BufferReader & BufferReader, float & Value) -> ARX::BufferReader &
-{
-    BufferReader.Read(sizeof(float), reinterpret_cast<ARX::Buffer::pointer>(&Value));
-    
-    return BufferReader;
-}
-
-auto ARX::operator>>(ARX::BufferReader & BufferReader, std::uint8_t & Value) -> ARX::BufferReader &
-{
-    BufferReader.Read(sizeof(std::uint8_t), reinterpret_cast<ARX::Buffer::pointer>(&Value));
-    
-    return BufferReader;
-}
-
-auto ARX::operator>>(ARX::BufferReader & BufferReader, std::uint32_t & Value) -> ARX::BufferReader &
-{
-    BufferReader.Read(sizeof(std::uint32_t), reinterpret_cast<ARX::Buffer::pointer>(&Value));
-    
-    return BufferReader;
-}
-
-auto ARX::operator>>(ARX::BufferReader & BufferReader, std::uint64_t & Value) -> ARX::BufferReader &
-{
-    BufferReader.Read(sizeof(std::uint64_t), reinterpret_cast<ARX::Buffer::pointer>(&Value));
-    
-    return BufferReader;
-}
-
-auto ARX::operator>>(ARX::BufferReader & BufferReader, bool & Value) -> ARX::BufferReader &
-{
-    BufferReader.Read(sizeof(bool), reinterpret_cast<ARX::Buffer::pointer>(&Value));
-    
-    return BufferReader;
+    m_Marker.SetPosition(m_Marker.GetPosition() + Offset);
 }
