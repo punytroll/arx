@@ -1,13 +1,12 @@
 project(
   'arx',
   'cpp',
-  version: '26.11.0',
+  version: '26.11.1',
   license: 'MIT',
   license_files: ['LICENSE'],
   meson_version: '>=1.11.0',
   default_options: {
     'cpp_std': 'c++23',
-    'werror': true,
     'warning_level': '3',
   },
 )

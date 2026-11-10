@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -38,20 +37,19 @@ ARX::Archive::~Archive()
 
 auto ARX::Archive::Load(std::filesystem::path const & FilePath) -> bool
 {
-    m_IStream = new std::ifstream{FilePath};
-    if(m_IStream->fail())
+    Close();
+    m_IStream.open(FilePath);
+    if(m_IStream.fail())
     {
         return false;
     }
-    // this position I chose after only a few looks at the file => prove me wrong ;)
-    Close();
     
-    auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-    auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-    auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-    auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-    auto RootItemIdentifier = ARX::ReadUnsignedInteger32Bit(*m_IStream);
-    auto NumberOfItems = ARX::ReadUnsignedInteger32Bit(*m_IStream);
+    auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    auto RootItemIdentifier = ARX::ReadUnsignedInteger32Bit(m_IStream);
+    auto NumberOfItems = ARX::ReadUnsignedInteger32Bit(m_IStream);
     
     if((MajorVersionNumber == 2) && (MinorVersionNumber == 1) && (RevisionNumber == 0) && (CandidateNumber == 0))
     {
@@ -69,6 +67,7 @@ auto ARX::Archive::Load(std::filesystem::path const & FilePath) -> bool
 
 auto ARX::Archive::Close() -> void
 {
+    m_IStream.close();
     while(m_Items.begin() != m_Items.end())
     {
         auto Item = m_Items.begin()->second;
@@ -403,42 +402,42 @@ auto ARX::Archive::m_Read_2_1_0_0(std::uint32_t ItemCount) -> void
 {
     for(auto ItemIndex = std::uint32_t{0}; ItemIndex < ItemCount; ++ItemIndex)
     {
-        auto Item = ARX::Item::Create(this, ARX::ReadUnsignedInteger32Bit(*m_IStream));
+        auto Item = ARX::Item::Create(this, ARX::ReadUnsignedInteger32Bit(m_IStream));
         
-        Item->SetType(ARX::ReadUnsignedInteger32Bit(*m_IStream));
-        Item->SetSubType(ARX::ReadUnsignedInteger32Bit(*m_IStream));
+        Item->SetType(ARX::ReadUnsignedInteger32Bit(m_IStream));
+        Item->SetSubType(ARX::ReadUnsignedInteger32Bit(m_IStream));
         
-        auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-        auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-        auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
-        auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(*m_IStream);
+        auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
         
         Item->SetVersionNumbers(MajorVersionNumber, MinorVersionNumber, RevisionNumber, CandidateNumber);
         
-        auto DataCompressionType = ARX::ReadUnsignedInteger32Bit(*m_IStream);
-        auto NameLength = ARX::ReadUnsignedInteger32Bit(*m_IStream);
-        auto DataDecompressedLength = ARX::ReadUnsignedInteger32Bit(*m_IStream);
-        auto DataCompressedLength = ARX::ReadUnsignedInteger32Bit(*m_IStream);
-        auto StructureLength = ARX::ReadUnsignedInteger32Bit(*m_IStream);
+        auto DataCompressionType = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        auto NameLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        auto DataDecompressedLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        auto DataCompressedLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        auto StructureLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
         auto Name = std::vector<char>(NameLength + 1);
         
-        m_IStream->read(Name.data(), NameLength + 1);
+        m_IStream.read(Name.data(), NameLength + 1);
         Name[NameLength] = '\0';
         Item->SetName(Name.data());
-        Item->GetStructure().m_ReadFromStream(StructureLength, *m_IStream);
-        Item->SetFetchInformation(m_IStream->tellg(), static_cast<ARX::Data::Compression>(DataCompressionType), DataDecompressedLength, DataCompressedLength);
-        m_IStream->seekg((DataCompressionType == 0) ? (DataDecompressedLength) : (DataCompressedLength), std::ios_base::cur);
+        Item->GetStructure().m_ReadFromStream(StructureLength, m_IStream);
+        Item->SetFetchInformation(m_IStream.tellg(), static_cast<ARX::Data::Compression>(DataCompressionType), DataDecompressedLength, DataCompressedLength);
+        m_IStream.seekg((DataCompressionType == 0) ? (DataDecompressedLength) : (DataCompressedLength), std::ios_base::cur);
     }
 }
 
 auto ARX::Archive::Fetch(std::uint32_t Offset, std::uint32_t Length, ARX::Buffer * Buffer) -> bool
 {
-    m_IStream->seekg(Offset, std::ios_base::beg);
+    m_IStream.seekg(Offset, std::ios_base::beg);
     Buffer->SetLength(0);
     
     auto BufferWriter = ARX::BufferWriter{*Buffer};
     
-    BufferWriter << std::make_pair(static_cast<ARX::Buffer::size_type>(Length), reinterpret_cast<std::istream *>(m_IStream));
+    BufferWriter << std::make_pair(static_cast<ARX::Buffer::size_type>(Length), dynamic_cast<std::istream *>(std::addressof(m_IStream)));
     
     return true;
 }

@@ -8,6 +8,7 @@
 #define ARX__INCLUDE__ARCHIVE_H
 
 #include <filesystem>
+#include <fstream>
 #include <map>
 #include <vector>
 
@@ -198,8 +199,8 @@ namespace ARX
          *         An error can have many reasons (file existance, permissions and content) but there is no facility to report which error occured.
          *         If you feel a need for it, please notify me.
          * 
-         * This function tries to load the ARX archive at the location indicated by @a FilePath.
-         * If the archive is found and could be opened, the current content of the ARX::Archive will be closed (via @a ARX::Archive::Close()).
+         * This function purges the current content of the ARX::Archive (via @a ARX::Archive::Close()).
+         * Then it tries to load the ARX archive at the location indicated by @a FilePath.
          * Note that if the archive proves to be no valid ARX archive the current content is not available anymore.
          **/
         auto Load(std::filesystem::path const & FilePath) -> bool;
@@ -425,7 +426,7 @@ namespace ARX
         /**
          * @brief The archive file stream.
          **/
-        std::istream * m_IStream{nullptr};
+        std::ifstream m_IStream;
         
     };
 }
