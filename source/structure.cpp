@@ -154,11 +154,11 @@ auto ARX::Structure::m_WriteToBuffer(ARX::Buffer & Buffer) const -> void
 {
     auto BufferWriter = ARX::BufferWriter{Buffer};
     
-    for(auto & [RelationName, Relation] : m_Relations)
+    for(auto const & [RelationName, Relation] : m_Relations)
     {
         BufferWriter << RelationName;
         BufferWriter << ARX::ToNetworkByteOrder(Relation.size());
-        for(auto Reference : Relation)
+        for(auto const & Reference : Relation)
         {
             BufferWriter << ARX::ToNetworkByteOrder(Reference.GetItemIdentifier());
         }

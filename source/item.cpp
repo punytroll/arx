@@ -87,13 +87,7 @@ auto ARX::Item::SetIdentifier(std::uint32_t Identifier) -> void
         // save the archive as it will be set to null in UnregisterItem.
         auto Archive = m_Archive;
         
-        try
-        {
-            Archive->Unregister(this);
-        }
-        catch(std::invalid_argument & Exception)
-        {
-        }
+        Archive->Unregister(this);
         
         auto OldIdentifier = m_Identifier;
         

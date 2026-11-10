@@ -32,7 +32,14 @@ ARX::Archive::Archive()
 
 ARX::Archive::~Archive()
 {
-    Close();
+    try
+    {
+        Close();
+    }
+    catch(...)
+    {
+        // Intentionally ignored: the exception must not leave the constructor
+    }
 }
 
 auto ARX::Archive::Load(std::filesystem::path const & FilePath) -> bool
@@ -58,7 +65,7 @@ auto ARX::Archive::Load(std::filesystem::path const & FilePath) -> bool
     }
     else
     {
-        std::cerr << "Unknown ARX archive format: version = " << static_cast<std::uint32_t>(MajorVersionNumber) << '.' << static_cast<std::uint32_t>(MinorVersionNumber) << '.' << static_cast<std::uint32_t>(RevisionNumber) << '.' << static_cast<std::uint32_t>(CandidateNumber) << '.' << std::endl;
+        std::cerr << "Unknown ARX archive format: version = " << static_cast<std::uint32_t>(MajorVersionNumber) << '.' << static_cast<std::uint32_t>(MinorVersionNumber) << '.' << static_cast<std::uint32_t>(RevisionNumber) << '.' << static_cast<std::uint32_t>(CandidateNumber) << ".\n";
         throw ARX::bad_file_format{FilePath};
     }
     
@@ -486,15 +493,16 @@ auto ARX::Archive::Save(std::filesystem::path const & FilePath, bool AutoCompres
         OStream << Item->GetName() << '\0' << StructureBuffer << *Item;
     }
     OStream.close();
-    
-    auto ChildPID = 0;
-    auto Return = 0;
-    
-    if((ChildPID = fork()) == 0)
+    if(auto ChildPID = fork(); ChildPID == 0)
     {
-        execlp("mv", "mv", "--force", TemporaryFilePath, FilePath.c_str(), reinterpret_cast<char *>(0));
+        execlp("mv", "mv", "--force", TemporaryFilePath.string().c_str(), FilePath.c_str(), reinterpret_cast<char *>(0));
     }
-    waitpid(ChildPID, &Return, 0);
+    else
+    {
+        auto Return = 0;
+        
+        waitpid(ChildPID, &Return, 0);
+    }
 }
 
 auto ARX::Archive::begin() -> ARX::Archive::iterator

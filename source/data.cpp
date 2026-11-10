@@ -48,7 +48,6 @@ auto ARX::Data::Decompress() -> void
 #ifdef HAVE_ZLIB_H
             auto DecompressedData = new ARX::Data::value_type[m_DecompressedLength];
             z_stream zStream;
-            int iReturn = 0;
             
             zStream.zalloc = nullptr;
             zStream.zfree = nullptr;
@@ -58,19 +57,19 @@ auto ARX::Data::Decompress() -> void
             zStream.next_out = reinterpret_cast<std::uint8_t *>(DecompressedData);
             /** @todo Why not use u4GetDecompressedLength() here? **/
             zStream.avail_out = m_DecompressedLength;
-            if((iReturn = inflateInit(&zStream)) != Z_OK)
+            if(inflateInit(&zStream) != Z_OK)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
                 throw zlib_error("TODO: specify!");
             }
-            if((iReturn = inflate(&zStream, Z_FINISH)) != Z_STREAM_END)
+            if(inflate(&zStream, Z_FINISH) != Z_STREAM_END)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
                 throw zlib_error("TODO: specify!");
             }
-            if((iReturn = inflateEnd(&zStream)) != Z_OK)
+            if(inflateEnd(&zStream) != Z_OK)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
@@ -102,22 +101,19 @@ auto ARX::Data::Decompress() -> void
             BZStream.next_out = reinterpret_cast<char *>(DecompressedData);
             /** @todo Why not use u4GetDecompressedLength() here? **/
             BZStream.avail_out = m_DecompressedLength;
-            
-            int iBZResult;
-            
-            if((iBZResult = BZ2_bzDecompressInit(&BZStream, 0, 0)) != BZ_OK)
+            if(BZ2_bzDecompressInit(&BZStream, 0, 0) != BZ_OK)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/
                 throw bzlib_error("TODO: specify!");
             }
-            if((iBZResult = BZ2_bzDecompress(&BZStream)) != BZ_STREAM_END)
+            if(BZ2_bzDecompress(&BZStream) != BZ_STREAM_END)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/
                 throw bzlib_error("TODO: specify!");
             }
-            if((iBZResult = BZ2_bzDecompressEnd(&BZStream)) != BZ_OK)
+            if(BZ2_bzDecompressEnd(&BZStream) != BZ_OK)
             {
                 delete[] DecompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/
@@ -162,7 +158,6 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
 #ifdef HAVE_ZLIB_H
             auto CompressedData = new ARX::Data::value_type[static_cast<std::uint32_t>(GetDecompressedLength() * 1.001 + 12)];
             z_stream zStream;
-            signed long slReturn = 0;
             
             zStream.zalloc = nullptr;
             zStream.zfree = nullptr;
@@ -170,19 +165,19 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
             zStream.avail_in = GetDecompressedLength();
             zStream.next_out = reinterpret_cast<unsigned char *>(CompressedData);
             zStream.avail_out = static_cast<std::uint32_t>(GetDecompressedLength() * 1.001 + 12);
-            if((slReturn = deflateInit(&zStream, CompressionType - ARX::Data::ZLIB_0)) != Z_OK)
+            if(deflateInit(&zStream, CompressionType - ARX::Data::ZLIB_0) != Z_OK)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
                 throw zlib_error("TODO: specify!");
             }
-            if((slReturn = deflate(&zStream, Z_FINISH)) != Z_STREAM_END)
+            if(deflate(&zStream, Z_FINISH) != Z_STREAM_END)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
                 throw zlib_error("TODO: specify!");
             }
-            if((slReturn = deflateEnd(&zStream)) != Z_OK)
+            if(deflateEnd(&zStream) != Z_OK)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
@@ -213,22 +208,19 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
             BZStream.avail_in = GetDecompressedLength();
             BZStream.next_out = reinterpret_cast<char *>(CompressedData);
             BZStream.avail_out = CompressedDataLength;
-            
-            int iBZResult;
-            
-            if((iBZResult = BZ2_bzCompressInit(&BZStream, 9, 0, 0)) != BZ_OK)
+            if(BZ2_bzCompressInit(&BZStream, 9, 0, 0) != BZ_OK)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/
                 throw bzlib_error("TODO: specify!");
             }
-            if((iBZResult = BZ2_bzCompress(&BZStream, BZ_FINISH)) != BZ_STREAM_END)
+            if(BZ2_bzCompress(&BZStream, BZ_FINISH) != BZ_STREAM_END)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/
                 throw bzlib_error("TODO: specify!");
             }
-            if((iBZResult = BZ2_bzCompressEnd(&BZStream)) != BZ_OK)
+            if(BZ2_bzCompressEnd(&BZStream) != BZ_OK)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in bzlib. **/

@@ -240,7 +240,7 @@ void ARX::Buffer::m_Insert(ARX::Buffer & Buffer, ARX::Buffer::size_type Position
             {
                 End += DataLength;
             }
-            End = std::copy(m_Begin + Position, m_Begin + m_Length, End);
+            std::copy(m_Begin + Position, m_Begin + m_Length, End);
             delete[] m_Begin;
             m_Begin = Begin;
             m_Capacity = Length;
