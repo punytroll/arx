@@ -1,10 +1,11 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
 #include <cstdint>
+#include <utility>
 
 /// optional headers
 #ifdef HAVE_ZLIB_H
@@ -19,31 +20,31 @@
 
 /// default compression
 #ifdef HAVE_BZLIB_H
-ARX::Data::Compression ARX::Data::m_DefaultCompression = BZLIB;
+ARX::Data::Compression ARX::Data::m_DefaultCompression = ARX::Data::Compression::BZLIB;
 #elif HAVE_ZLIB_H
-ARX::Data::Compression ARX::Data::m_DefaultCompression = ZLIB_9;
+ARX::Data::Compression ARX::Data::m_DefaultCompression = ARX::Data::Compression::ZLIB_9;
 #else
-ARX::Data::Compression ARX::Data::m_DefaultCompression = NONE;
+ARX::Data::Compression ARX::Data::m_DefaultCompression = ARX::Data::Compression::NONE;
 #endif
 
 auto ARX::Data::Decompress() -> void
 {
     switch(m_CompressionType)
     {
-    case ARX::Data::NONE:
+    case ARX::Data::Compression::NONE:
         {
             break;
         }
-    case ARX::Data::ZLIB_0:
-    case ARX::Data::ZLIB_1:
-    case ARX::Data::ZLIB_2:
-    case ARX::Data::ZLIB_3:
-    case ARX::Data::ZLIB_4:
-    case ARX::Data::ZLIB_5:
-    case ARX::Data::ZLIB_6:
-    case ARX::Data::ZLIB_7:
-    case ARX::Data::ZLIB_8:
-    case ARX::Data::ZLIB_9:
+    case ARX::Data::Compression::ZLIB_0:
+    case ARX::Data::Compression::ZLIB_1:
+    case ARX::Data::Compression::ZLIB_2:
+    case ARX::Data::Compression::ZLIB_3:
+    case ARX::Data::Compression::ZLIB_4:
+    case ARX::Data::Compression::ZLIB_5:
+    case ARX::Data::Compression::ZLIB_6:
+    case ARX::Data::Compression::ZLIB_7:
+    case ARX::Data::Compression::ZLIB_8:
+    case ARX::Data::Compression::ZLIB_9:
         {
 #ifdef HAVE_ZLIB_H
             auto DecompressedData = new ARX::Data::value_type[m_DecompressedLength];
@@ -78,7 +79,7 @@ auto ARX::Data::Decompress() -> void
             SetLength(0);
             Insert(0, m_DecompressedLength, DecompressedData);
             delete[] DecompressedData;
-            m_CompressionType = ARX::Data::NONE;
+            m_CompressionType = ARX::Data::Compression::NONE;
             m_CompressedLength = 0;
 #else
             throw std::runtime_error{"Unsupported decompression method."};
@@ -86,7 +87,7 @@ auto ARX::Data::Decompress() -> void
             
             break;
         }
-    case ARX::Data::BZLIB:
+    case ARX::Data::Compression::BZLIB:
         {
 #ifdef HAVE_BZLIB_H
             auto DecompressedData = new ARX::Data::value_type[m_DecompressedLength];
@@ -122,7 +123,7 @@ auto ARX::Data::Decompress() -> void
             SetLength(0);
             Insert(0, m_DecompressedLength, DecompressedData);
             delete[] DecompressedData;
-            m_CompressionType = ARX::Data::NONE;
+            m_CompressionType = ARX::Data::Compression::NONE;
             m_CompressedLength = 0;
 #else
             throw std::runtime_error{"Unsupported decompression method."};
@@ -140,20 +141,20 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
     }
     switch(CompressionType)
     {
-    case ARX::Data::NONE:
+    case ARX::Data::Compression::NONE:
         {
             break;
         }
-    case ARX::Data::ZLIB_0:
-    case ARX::Data::ZLIB_1:
-    case ARX::Data::ZLIB_2:
-    case ARX::Data::ZLIB_3:
-    case ARX::Data::ZLIB_4:
-    case ARX::Data::ZLIB_5:
-    case ARX::Data::ZLIB_6:
-    case ARX::Data::ZLIB_7:
-    case ARX::Data::ZLIB_8:
-    case ARX::Data::ZLIB_9:
+    case ARX::Data::Compression::ZLIB_0:
+    case ARX::Data::Compression::ZLIB_1:
+    case ARX::Data::Compression::ZLIB_2:
+    case ARX::Data::Compression::ZLIB_3:
+    case ARX::Data::Compression::ZLIB_4:
+    case ARX::Data::Compression::ZLIB_5:
+    case ARX::Data::Compression::ZLIB_6:
+    case ARX::Data::Compression::ZLIB_7:
+    case ARX::Data::Compression::ZLIB_8:
+    case ARX::Data::Compression::ZLIB_9:
         {
 #ifdef HAVE_ZLIB_H
             auto CompressedData = new ARX::Data::value_type[static_cast<std::uint32_t>(GetDecompressedLength() * 1.001 + 12)];
@@ -165,7 +166,7 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
             zStream.avail_in = GetDecompressedLength();
             zStream.next_out = reinterpret_cast<unsigned char *>(CompressedData);
             zStream.avail_out = static_cast<std::uint32_t>(GetDecompressedLength() * 1.001 + 12);
-            if(deflateInit(&zStream, CompressionType - ARX::Data::ZLIB_0) != Z_OK)
+            if(deflateInit(&zStream, std::to_underlying(CompressionType) - std::to_underlying(ARX::Data::Compression::ZLIB_0)) != Z_OK)
             {
                 delete[] CompressedData;
                 /** @todo Correctly specify the actual error that occured in zlib. **/
@@ -194,7 +195,7 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
             
             break;
         }
-    case ARX::Data::BZLIB:
+    case ARX::Data::Compression::BZLIB:
         {
 #ifdef HAVE_BZLIB_H
             auto CompressedDataLength = static_cast<std::uint32_t>(GetDecompressedLength() * 1.01 + 600);
@@ -241,12 +242,12 @@ auto ARX::Data::Compress(ARX::Data::Compression CompressionType) -> void
 
 auto ARX::Data::IsCompressed() const -> bool
 {
-    return m_CompressionType != ARX::Data::NONE;
+    return m_CompressionType != ARX::Data::Compression::NONE;
 }
 
 auto ARX::Data::IsDecompressed() const -> bool
 {
-    return m_CompressionType == ARX::Data::NONE;
+    return m_CompressionType == ARX::Data::Compression::NONE;
 }
 
 auto ARX::Data::GetCompression() const -> ARX::Data::Compression
@@ -282,7 +283,7 @@ auto ARX::Data::Fetch() -> bool
 {
     if(m_Fetched == false)
     {
-        m_Fetched = m_Fetch(m_Offset, ((m_CompressionType == ARX::Data::NONE) ? (m_DecompressedLength) : (m_CompressedLength)));
+        m_Fetched = m_Fetch(m_Offset, ((m_CompressionType == ARX::Data::Compression::NONE) ? (m_DecompressedLength) : (m_CompressedLength)));
         
         return m_Fetched;
     }

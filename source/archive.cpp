@@ -1,6 +1,6 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
@@ -10,7 +10,7 @@
 
 #include <filesystem>
 #include <iostream>
-#include <sstream>
+#include <utility>
 
 #include <arx/archive.h>
 #include <arx/buffer_writer.h>
@@ -485,7 +485,7 @@ auto ARX::Archive::Save(std::filesystem::path const & FilePath, bool AutoCompres
         ARX::WriteUnsignedInteger8Bit(OStream, Item->GetMinorVersionNumber());
         ARX::WriteUnsignedInteger8Bit(OStream, Item->GetRevisionNumber());
         ARX::WriteUnsignedInteger8Bit(OStream, Item->GetCandidateNumber());
-        ARX::WriteUnsignedInteger32Bit(OStream, Item->GetCompression());
+        ARX::WriteUnsignedInteger32Bit(OStream, std::to_underlying(Item->GetCompression()));
         ARX::WriteUnsignedInteger32Bit(OStream, Item->GetName().length());
         ARX::WriteUnsignedInteger32Bit(OStream, Item->GetDecompressedLength());
         ARX::WriteUnsignedInteger32Bit(OStream, Item->GetCompressedLength());

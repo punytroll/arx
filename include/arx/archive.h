@@ -10,7 +10,6 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
-#include <vector>
 
 #include <arx/common.h>
 

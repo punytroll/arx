@@ -1,6 +1,6 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
@@ -9,7 +9,6 @@
 
 #include <list>
 #include <map>
-#include <vector>
 
 #include <arx/common.h>
 #include <arx/reference.h>

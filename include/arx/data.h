@@ -1,6 +1,6 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
@@ -32,7 +32,7 @@ namespace ARX
     class Data : public ARX::Buffer
     {
     public:
-        typedef enum
+        enum class Compression : std::uint8_t
         {
             NONE = 0,
             ZLIB_0 = 1,
@@ -46,7 +46,7 @@ namespace ARX
             ZLIB_8 = 9,
             ZLIB_9 = 10,
             BZLIB = 11
-        } Compression;
+        };
         
         static ARX::Data::Compression m_DefaultCompression;
         

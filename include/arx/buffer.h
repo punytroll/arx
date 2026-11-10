@@ -1,6 +1,6 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
@@ -8,7 +8,6 @@
 #define ARX__INCLUDE__BUFFER_H
 
 #include <set>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -106,13 +105,14 @@ namespace ARX
          **/
         typedef std::uint32_t size_type;
         
+
         /**
          * @brief A marked position in a buffer, changing with content changes.
          **/
         class Marker
         {
         public:
-            enum class Alignment
+            enum class Alignment : std::uint8_t
             {
                 Left,
                 Right

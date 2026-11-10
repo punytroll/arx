@@ -1,13 +1,11 @@
 /**
  * ARX - Advanced Resource Archives
- * Copyright (C) 2005-2026  Hagen Möbius
+ * Copyright (C) 2005-2026  Hagen MÃ¶bius
  * SPDX-License-Identifier: MIT
 **/
 
 #ifndef ARX__INCLUDE__BUFFERREADER_H
 #define ARX__INCLUDE__BUFFERREADER_H
-
-#include <cstdint>
 
 #include <arx/buffer.h>
 
