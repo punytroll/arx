@@ -8,8 +8,12 @@
 #define ARX__SOURCE__IO_H
 
 #include <bit>
+#include <concepts>
 #include <cstdint>
+#include <expected>
 #include <istream>
+#include <ostream>
+#include <string>
 
 namespace ARX
 {
@@ -42,7 +46,7 @@ namespace ARX
     }
     
     [[nodiscard]]
-    inline static auto ReadStringWithTermination(std::istream & IStream) -> std::string
+    inline auto ReadStringWithTermination(std::istream & IStream) -> std::expected<std::string, ARX::ReadError>
     {
         auto Result = std::string{};
         auto Char = '\0';
@@ -55,31 +59,45 @@ namespace ARX
             }
             else
             {
-                break;
+                return Result;
             }
         }
         
-        return Result;
+        return std::unexpected{(IStream.eof() == true) ? (ARX::ReadError::EndOfStream) : (ARX::ReadError::StreamFailure)};
     }
     
     [[nodiscard]]
-    inline auto ReadUnsignedInteger8Bit(std::istream & IStream) -> std::uint8_t
+    inline auto ReadUnsignedInteger8Bit(std::istream & IStream) -> std::expected<std::uint8_t, ARX::ReadError>
     {
         auto Result = std::uint8_t{};
         
         IStream.read(reinterpret_cast<std::istream::char_type *>(&Result), sizeof(Result));
         
-        return ARX::FromNetworkByteOrder(Result);
+        if(IStream.fail() == false)
+        {
+            return ARX::FromNetworkByteOrder(Result);
+        }
+        else
+        {
+            return std::unexpected{(IStream.eof() == true) ? (ARX::ReadError::EndOfStream) : (ARX::ReadError::StreamFailure)};
+        }
     }
     
     [[nodiscard]]
-    inline auto ReadUnsignedInteger32Bit(std::istream & IStream) -> std::uint32_t
+    inline auto ReadUnsignedInteger32Bit(std::istream & IStream) -> std::expected<std::uint32_t, ARX::ReadError>
     {
         auto Result = std::uint32_t{};
         
         IStream.read(reinterpret_cast<std::istream::char_type *>(&Result), sizeof(Result));
         
-        return ARX::FromNetworkByteOrder(Result);
+        if(IStream.fail() == false)
+        {
+            return ARX::FromNetworkByteOrder(Result);
+        }
+        else
+        {
+            return std::unexpected{(IStream.eof() == true) ? (ARX::ReadError::EndOfStream) : (ARX::ReadError::StreamFailure)};
+        }
     }
     
     inline auto WriteUnsignedInteger8Bit(std::ostream & OStream, std::uint8_t Value) -> void

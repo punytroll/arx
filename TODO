@@ -1,0 +1,10 @@
+- considerations for file version 3.0.0.0
+    - the file format is not meant for streaming, so all field lengths should be replaced by terminations or counts
+        - item name as \0 terminated
+        - structure length -> relation count
+    - allow storing item identifier, item type, item subtype, item version (joint value) and item name as optionals
+    - allow storing archive root item identifier as optional
+    - store item name and item structure in place
+- no exceptions please
+    - move to std::expected<..., Error>
+    - also replace bool returns by std::expected<void, Error>

@@ -202,6 +202,7 @@ namespace ARX
          * Then it tries to load the ARX archive at the location indicated by @a FilePath.
          * Note that if the archive proves to be no valid ARX archive the current content is not available anymore.
          **/
+        [[nodiscard]]
         auto Load(std::filesystem::path const & FilePath) -> bool;
         
         /**
@@ -400,7 +401,8 @@ namespace ARX
         /**
          * @brief The reader function that retrieves Item header information from a channel.
          **/
-        auto m_Read_2_1_0_0(std::uint32_t ItemCount) -> void;
+        [[nodiscard]]
+        auto m_Read_2_1_0_0(std::uint32_t ItemCount) -> bool;
         
         /**
          * @brief Internal item container.

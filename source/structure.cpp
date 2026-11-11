@@ -125,29 +125,55 @@ auto ARX::Structure::HasRelation(std::string const & Relation) const -> bool
     return m_Relations.find(Relation) != m_Relations.end();
 }
 
-auto ARX::Structure::m_ReadFromStream(std::uint32_t StructureDataLength, std::istream & IStream) -> void
+auto ARX::Structure::m_ReadFromStream(std::uint32_t StructureDataLength, std::istream & IStream) -> std::expected<void, ARX::ReadError>
 {
     while(StructureDataLength > 0)
     {
-        auto Relation = ARX::ReadStringWithTermination(IStream);
-        
-        assert(IStream);
-        StructureDataLength -= Relation.length() + 1;
-        
-        auto ItemCount = ARX::ReadUnsignedInteger32Bit(IStream);
-        
-        assert(IStream);
-        StructureDataLength -= 4;
-        while(ItemCount > 0)
+        if(auto RelationNameOrError = ARX::ReadStringWithTermination(IStream); RelationNameOrError.has_value() == true)
         {
-            auto ItemIdentifier = ARX::ReadUnsignedInteger32Bit(IStream);
+            auto const & RelationName = RelationNameOrError.value();
             
-            assert(IStream);
-            StructureDataLength -= 4;
-            Add(ItemIdentifier, Relation);
-            --ItemCount;
+            if(StructureDataLength < RelationName.length() + 1)
+            {
+                return std::unexpected{ARX::ReadError::FieldContentExceedsFieldLength};
+            }
+            StructureDataLength -= RelationName.length() + 1;
+            
+            if(auto ItemCountOrError = ARX::ReadUnsignedInteger32Bit(IStream); ItemCountOrError.has_value() == true)
+            {
+                auto ItemCount = ItemCountOrError.value();
+                
+                if(StructureDataLength < 4)
+                {
+                    return std::unexpected{ARX::ReadError::FieldContentExceedsFieldLength};
+                }
+                StructureDataLength -= 4;
+                while(ItemCount > 0)
+                {
+                    if(auto ItemIdentifierOrError = ARX::ReadUnsignedInteger32Bit(IStream); ItemIdentifierOrError.has_value() == true)
+                    {
+                        if(StructureDataLength < 4)
+                        {
+                            return std::unexpected{ARX::ReadError::FieldContentExceedsFieldLength};
+                        }
+                        StructureDataLength -= 4;
+                        Add(ItemIdentifierOrError.value(), RelationName);
+                        --ItemCount;
+                    }
+                }
+            }
+            else
+            {
+                return std::unexpected{ItemCountOrError.error()};
+            }
+        }
+        else
+        {
+            return std::unexpected{RelationNameOrError.error()};
         }
     }
+    
+    return {};
 }
 
 auto ARX::Structure::m_WriteToBuffer(ARX::Buffer & Buffer) const -> void

@@ -18,7 +18,7 @@ auto OpenArchive(std::filesystem::path const & ArchivePath) -> std::unique_ptr<A
 {
     auto Archive = std::make_unique<ARX::Archive>();
     
-    Archive->Load(ArchivePath.native());
+    assert(Archive->Load(ArchivePath.native()) == true);
     
     return Archive;
 }

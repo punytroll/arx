@@ -21,6 +21,24 @@
 
 namespace ARX
 {
+    enum class ReadError
+    {
+        /**
+         * @brief The stream ended before all necessary bytes were read.
+         **/
+        EndOfStream,
+        
+        /**
+         * @brief When the content of a field exceeds the indicated length of the field.
+         **/
+        FieldContentExceedsFieldLength,
+        
+        /**
+         * @brief Any other stream error.
+         **/
+        StreamFailure
+    };
+    
     /**
      * @brief A libarxx wide constant that always stands for invalid or not specified unique or non-unique IDs.
      *

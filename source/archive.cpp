@@ -51,22 +51,64 @@ auto ARX::Archive::Load(std::filesystem::path const & FilePath) -> bool
         return false;
     }
     
-    auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-    auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-    auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-    auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-    auto RootItemIdentifier = ARX::ReadUnsignedInteger32Bit(m_IStream);
-    auto NumberOfItems = ARX::ReadUnsignedInteger32Bit(m_IStream);
+    auto MajorVersionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
     
-    if((MajorVersionNumber == 2) && (MinorVersionNumber == 1) && (RevisionNumber == 0) && (CandidateNumber == 0))
+    if(MajorVersionNumberOrError.has_value() == false)
     {
-        m_Read_2_1_0_0(NumberOfItems);
-        m_RootItem = GetItem(RootItemIdentifier);
+        return false;
+    }
+    
+    auto MinorVersionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    
+    if(MinorVersionNumberOrError.has_value() == false)
+    {
+        return false;
+    }
+    
+    auto RevisionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    
+    if(RevisionNumberOrError.has_value() == false)
+    {
+        return false;
+    }
+    
+    auto CandidateNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+    
+    if(CandidateNumberOrError.has_value() == false)
+    {
+        return false;
+    }
+    
+    auto RootItemIdentifierOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+    
+    if(RootItemIdentifierOrError.has_value() == false)
+    {
+        return false;
+    }
+    
+    auto NumberOfItemsOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+    
+    if(NumberOfItemsOrError.has_value() == false)
+    {
+        return false;
+    }
+    
+    if((MajorVersionNumberOrError.value() == 2) && (MinorVersionNumberOrError.value() == 1) && (RevisionNumberOrError.value() == 0) && (CandidateNumberOrError.value() == 0))
+    {
+        if(m_Read_2_1_0_0(NumberOfItemsOrError.value()) == false)
+        {
+            return false;
+        }
+        else
+        {
+            m_RootItem = GetItem(RootItemIdentifierOrError.value());
+        }
     }
     else
     {
-        std::cerr << "Unknown ARX archive format: version = " << static_cast<std::uint32_t>(MajorVersionNumber) << '.' << static_cast<std::uint32_t>(MinorVersionNumber) << '.' << static_cast<std::uint32_t>(RevisionNumber) << '.' << static_cast<std::uint32_t>(CandidateNumber) << ".\n";
-        throw ARX::bad_file_format{FilePath};
+        std::println(std::cerr, "Unknown ARX archive format: version = {}.{}.{}.{}.", static_cast<std::uint32_t>(MajorVersionNumberOrError.value()), static_cast<std::uint32_t>(MinorVersionNumberOrError.value()), static_cast<std::uint32_t>(RevisionNumberOrError.value()), static_cast<std::uint32_t>(CandidateNumberOrError.value()));
+        
+        return false;
     }
     
     return true;
@@ -405,36 +447,114 @@ auto ARX::Archive::ReleaseReferenceCore(ARX::ReferenceCore * ReferenceCore) -> v
     m_References.erase(ReferenceIterator);
 }
 
-auto ARX::Archive::m_Read_2_1_0_0(std::uint32_t ItemCount) -> void
+auto ARX::Archive::m_Read_2_1_0_0(std::uint32_t ItemCount) -> bool
 {
     for(auto ItemIndex = std::uint32_t{0}; ItemIndex < ItemCount; ++ItemIndex)
     {
-        auto Item = ARX::Item::Create(this, ARX::ReadUnsignedInteger32Bit(m_IStream));
+        auto IdentifierOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
         
-        Item->SetType(ARX::ReadUnsignedInteger32Bit(m_IStream));
-        Item->SetSubType(ARX::ReadUnsignedInteger32Bit(m_IStream));
+        if(IdentifierOrError.has_value() == false)
+        {
+            return false;
+        }
         
-        auto MajorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-        auto MinorVersionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-        auto RevisionNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
-        auto CandidateNumber = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        auto Item = ARX::Item::Create(this, IdentifierOrError.value());
         
-        Item->SetVersionNumbers(MajorVersionNumber, MinorVersionNumber, RevisionNumber, CandidateNumber);
+        if(auto TypeOrError = ARX::ReadUnsignedInteger32Bit(m_IStream); TypeOrError.has_value() == true)
+        {
+            Item->SetType(TypeOrError.value());
+        }
+        else
+        {
+            return false;
+        }
+        if(auto SubTypeOrError = ARX::ReadUnsignedInteger32Bit(m_IStream); SubTypeOrError.has_value() == true)
+        {
+            Item->SetSubType(SubTypeOrError.value());
+        }
+        else
+        {
+            return false;
+        }
         
-        auto DataCompressionType = ARX::ReadUnsignedInteger32Bit(m_IStream);
-        auto NameLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
-        auto DataDecompressedLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
-        auto DataCompressedLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
-        auto StructureLength = ARX::ReadUnsignedInteger32Bit(m_IStream);
-        auto Name = std::vector<char>(NameLength + 1);
+        auto MajorVersionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
         
-        m_IStream.read(Name.data(), NameLength + 1);
-        Name[NameLength] = '\0';
+        if(MajorVersionNumberOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto MinorVersionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        
+        if(MinorVersionNumberOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto RevisionNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        
+        if(RevisionNumberOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto CandidateNumberOrError = ARX::ReadUnsignedInteger8Bit(m_IStream);
+        
+        if(CandidateNumberOrError.has_value() == false)
+        {
+            return false;
+        }
+        Item->SetVersionNumbers(MajorVersionNumberOrError.value(), MinorVersionNumberOrError.value(), RevisionNumberOrError.value(), CandidateNumberOrError.value());
+        
+        auto DataCompressionTypeOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        
+        if(DataCompressionTypeOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto NameLengthOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        
+        if(NameLengthOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto DataDecompressedLengthOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        
+        if(DataDecompressedLengthOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto DataCompressedLengthOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        
+        if(DataCompressedLengthOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto StructureLengthOrError = ARX::ReadUnsignedInteger32Bit(m_IStream);
+        
+        if(StructureLengthOrError.has_value() == false)
+        {
+            return false;
+        }
+        
+        auto Name = std::vector<char>(NameLengthOrError.value() + 1);
+        
+        m_IStream.read(Name.data(), NameLengthOrError.value() + 1);
+        Name[NameLengthOrError.value()] = '\0';
         Item->SetName(Name.data());
-        Item->GetStructure().m_ReadFromStream(StructureLength, m_IStream);
-        Item->SetFetchInformation(m_IStream.tellg(), static_cast<ARX::Data::Compression>(DataCompressionType), DataDecompressedLength, DataCompressedLength);
-        m_IStream.seekg((DataCompressionType == 0) ? (DataDecompressedLength) : (DataCompressedLength), std::ios_base::cur);
+        if(Item->GetStructure().m_ReadFromStream(StructureLengthOrError.value(), m_IStream).has_value() == false)
+        {
+            return false;
+        }
+        Item->SetFetchInformation(m_IStream.tellg(), static_cast<ARX::Data::Compression>(DataCompressionTypeOrError.value()), DataDecompressedLengthOrError.value(), DataCompressedLengthOrError.value());
+        m_IStream.seekg((DataCompressionTypeOrError.value() == 0) ? (DataDecompressedLengthOrError.value()) : (DataCompressedLengthOrError.value()), std::ios_base::cur);
     }
+    
+    return true;
 }
 
 auto ARX::Archive::Fetch(std::uint32_t Offset, std::uint32_t Length, ARX::Buffer * Buffer) -> bool

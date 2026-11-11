@@ -7,6 +7,7 @@
 #ifndef ARX__INCLUDE__STRUCTURE_H
 #define ARX__INCLUDE__STRUCTURE_H
 
+#include <expected>
 #include <list>
 #include <map>
 
@@ -545,7 +546,7 @@ namespace ARX
          **/
         auto m_WriteToBuffer(ARX::Buffer & Buffer) const -> void;
         
-        auto m_ReadFromStream(std::uint32_t StructureDataLength, std::istream & IStream) -> void;
+        auto m_ReadFromStream(std::uint32_t StructureDataLength, std::istream & IStream) -> std::expected<void, ARX::ReadError>;
         
         auto m_RemoveRelation(ARX::Structure::Relation * Relation) -> void;
         
